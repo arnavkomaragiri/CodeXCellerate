@@ -1,0 +1,2 @@
+protobuf==3.17.3
+fastapi[all]==0.68.1
