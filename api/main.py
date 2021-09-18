@@ -25,9 +25,13 @@ def completion(text: str, max_tokens: Optional[int]=50, stop: Optional[str]=None
     )
 
 @app.get("/runtime")
-def runtime(code: str, max_tokens: Optional[int]=50, stop: Optional[str]=None):
-    prompt = "Optimize the runtime of the above code\n"
-    return completion(prompt + code, max_tokens, stop)
+def runtime(code: str, lang: str, max_tokens: Optional[int]=50, stop: Optional[str]=None):
+    if lang.lower() == "python":
+        prefix = "#"
+    elif lang.lower() == "c" or lang.lower() == "c++" or lang.lower() == "javascript":
+        prefix = "//"
+    prompt = " Optimize the runtime of the above code\n"
+    return completion(prefix + prompt + code, max_tokens, stop)
 
 @app.get("/explain")
 def explain(code: str, max_tokens: Optional[int]=50, stop: Optional[str]=None):
