@@ -8,9 +8,11 @@ app = FastAPI()
 
 class PromptTree:
     def __init__(self, prompt_id: str, prompt_text: str, children: Optional[list] = None):
-        self.prompt_id = prompt_id
         self.prompt_text = prompt_text
         self.children = children
+
+    def __repr__(self):
+        return self.prompt_text
 
 engine = "cushman-codex"
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -27,10 +29,21 @@ def completion(text: str, max_tokens: Optional[int]=50, stop: Optional[str]=None
         stop=stop
     )
 
+@app.get("/runtime")
+def runtime(code: str, max_tokens: Optional[int]=50, stop: Optional[str]=None):
+    print("This is very useful")
+
+@app.get("/explain")
+def explain(code: str, max_tokens: Optional[int]=50, stop: Optional[str]=None):
+    print("This is even more useful")
+
+@app.get("/parallel")
+def parallel(code: str, max_tokens: Optional[int]=50, stop: Optional[str]=None):
+    print("This is super more useful")
+
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
-
+    return "If you're reading this, know that this was born from a 2am session screwing with Copilot"
 
 @app.get("/items/{item_id}")
 def read_item(item_id: int, q: Optional[str] = None):
