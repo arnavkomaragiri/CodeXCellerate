@@ -1,6 +1,7 @@
 import os
 import openai
 import timeit
+import json
 
 from typing import Optional
 from fastapi import FastAPI
@@ -13,16 +14,15 @@ app = FastAPI()
 engine = "davinci-codex"
 openai.api_key = open('env.txt').readlines()[0]
 
-# data model for the request body
 class Item(BaseModel):
     code: str
     
 
 @app.get("/debug/completion")
-def completion(text: str, max_tokens: Optional[int]=None, stop: Optional[str]=None):
+def completion(text: str, max_tokens: Optional[int]=None, stop: Optional[str]="\n#"):
     return openai.Completion.create(
         engine=engine,
-        text=text,
+        prompt=text,
         max_tokens=max_tokens,
         temperature=0,
         frequency_penalty=0.0, # TODO: Tune these
@@ -31,20 +31,37 @@ def completion(text: str, max_tokens: Optional[int]=None, stop: Optional[str]=No
     )
 
 @app.get("/runtime")
-def runtime(code: Item, lang: str, max_tokens: Optional[int]=None, stop: Optional[str]=None):
+def runtime(code: Item, lang: str, max_tokens: Optional[int]=None, stop: Optional[str]="\n#"):
     if lang.lower() == "python":
         prefix = "#"
     elif lang.lower() == "c" or lang.lower() == "c++" or lang.lower() == "javascript":
         prefix = "//"
     prompts = [" Optimize the runtime of the above code", " Optimize the runtime complexity of the above code", 
                 " Optimize the time complexity of the above code", " Improve the runtime complexity of the above code",
-                " Improve the runtime of the above code", " Improve the time complexity of the above code"]
-    results = [completion(code.code + "\n" + prefix + prompt + "\n", max_tokens, stop) for prompt in prompts]
-    programs = [result["choices"][0]["text"] for result in results]
-    char_freq_map = lambda x: {c: x.count(c) for c in x}
-    char_freq_maps = list(set([(i, char_freq_map(program)) for i, program in enumerate(programs)]))
-    return [programs[i] for i, _ in char_freq_maps] 
+                " Improve the runtime of the above code", " Improve the time complexity of the above code",
+                " Reduce the time complexity of the above code", " Reduce the runtime complexity of the above code",
+                " Optimize the above code"]
+    footer = ""
 
+    results = [completion(f"{code}\n{prefix} Language: {lang}\n{prefix}{prompt}\n{footer}", max_tokens, stop) for prompt in prompts]
+    programs = [result["choices"][0]["text"] for result in results]
+
+    char_freq_map = lambda x: {c: x.count(c) for c in x}
+    char_freq_maps = [json.dumps(char_freq_map(program)) for i, program in enumerate(programs)]
+
+    seen = set()
+    output = []
+    for i, char_freq_map in enumerate(char_freq_maps):
+        if char_freq_map not in seen:
+            seen.add(char_freq_map)
+        else:
+            output.append(programs[i])
+    return output
+
+with open("test.txt") as f:
+    code = f.read()
+
+print(runtime(code, "python", max_tokens=1024, stop="\n#"))
 
 @app.get("/explain")
 def explain(code: str, max_tokens: Optional[int]=50, stop: Optional[str]=None):
