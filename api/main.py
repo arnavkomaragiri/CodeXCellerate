@@ -6,6 +6,12 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
+class PromptTree:
+    def __init__(self, prompt_id: str, prompt_text: str, children: Optional[list] = None):
+        self.prompt_id = prompt_id
+        self.prompt_text = prompt_text
+        self.children = children
+
 engine = "cushman-codex"
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
