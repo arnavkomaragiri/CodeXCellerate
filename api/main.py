@@ -7,7 +7,7 @@ from fastapi import FastAPI
 app = FastAPI()
 
 class PromptTree:
-    def __init__(self, prompt_id: str, prompt_text: str, children: Optional[list] = None):
+    def __init__(self, prompt_text: str, children: Optional[list] = None):
         self.prompt_text = prompt_text
         self.children = children
 
@@ -31,15 +31,15 @@ def completion(text: str, max_tokens: Optional[int]=50, stop: Optional[str]=None
 
 @app.get("/runtime")
 def runtime(code: str, max_tokens: Optional[int]=50, stop: Optional[str]=None):
-    print("This is very useful")
+    pass
 
 @app.get("/explain")
 def explain(code: str, max_tokens: Optional[int]=50, stop: Optional[str]=None):
-    print("This is even more useful")
+    pass
 
 @app.get("/parallel")
 def parallel(code: str, max_tokens: Optional[int]=50, stop: Optional[str]=None):
-    print("This is super more useful")
+    pass
 
 @app.get("/")
 def read_root():
