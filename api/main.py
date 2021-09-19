@@ -59,11 +59,24 @@ def runtime(code: Item, lang: str, max_tokens: Optional[int]=None, stop: Optiona
 with open("test.txt") as f:
     code = f.read()
 
-print(runtime(code, "python", max_tokens=1024, stop="\n#"))
+# print(runtime(code, "python", max_tokens=1024, stop="\n#"))
 
 @app.get("/explain")
-def explain(code: str, max_tokens: Optional[int]=50, stop: Optional[str]=None):
-    pass
+def explain(code: str, lang: str, max_tokens: Optional[int]=50, stop: Optional[str]=None):
+    if lang.lower() == "python":
+        prefix = "\n#"
+        suffix = "'''"
+    elif lang.lower() == "c" or lang.lower() == "c++" or lang.lower() == "javascript":
+        prefix = "\n//"
+        suffix = "*/"
+    prompts = [" Explain."]
+    return completion(code + prefix + prompts[0] + '\n' + suffix, 1024, "\n\n")['choices'][0]['text']
+
+with open('test.txt') as f:
+    string = f.readlines()
+    string = ''.join(string)
+
+print(explain(string, "python"))
 
 @app.get("/parallel")
 def parallel(code: str, max_tokens: Optional[int]=50, stop: Optional[str]=None):
