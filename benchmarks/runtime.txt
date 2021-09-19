@@ -1,0 +1,6 @@
+original : codexcelerated
+128 : 8
+Equivalent
+TLE : 880ms
+Recursion Depth Exceeded : 24ms
+144ms: 68ms
