@@ -18,7 +18,7 @@ class Item(BaseModel):
     code: str
     
 
-@app.get('/debug/completion')
+@app.post('/debug/completion')
 def completion(text: str, max_tokens: Optional[int]=None, stop: Optional[str]='\n\n#'):
     return openai.Completion.create(
         engine=engine,
@@ -30,7 +30,7 @@ def completion(text: str, max_tokens: Optional[int]=None, stop: Optional[str]='\
         stop=stop
     )
 
-@app.get('/runtime')
+@app.post('/runtime')
 def runtime(code: Item, lang: str, max_tokens: Optional[int]=1024, stop: Optional[str]='\n\n#'):
     if lang.lower() == 'python':
         prefix = '\n#'
@@ -56,7 +56,7 @@ def runtime(code: Item, lang: str, max_tokens: Optional[int]=1024, stop: Optiona
             seen.add(char_freq_map)
     return output
 
-@app.get('/explain')
+@app.post('/explain')
 def explain(code: str, lang: str, max_tokens: Optional[int]=1024, stop: Optional[str]=None):
     if lang.lower() == 'python':
         prefix = '\n#'
@@ -67,7 +67,7 @@ def explain(code: str, lang: str, max_tokens: Optional[int]=1024, stop: Optional
     prompt = ' Explain.\n'
     return completion(code + prefix + prompt + suffix, max_tokens, '\n\n')['choices'][0]['text']
 
-@app.get('/copied')
+@app.post('/copied')
 def copied(code: str, lang: str, max_tokens: Optional[int]=1024, stop: Optional[str]='\n\n#'):
     if lang.lower() == 'c' or lang.lower() == 'c++' or lang.lower() == 'javascript':
         prefix = '\n//'

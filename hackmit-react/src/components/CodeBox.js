@@ -14,15 +14,15 @@ function CodeBox(props){
     //     console.log('render');
     // });
 
+
     return(
         <div className="container">
-            <textarea id="demo" className="design" rows="30" cols="50" required value={code} onChange={e => setCode(e.target.value)}>
-            {/* <button>Prettify</button> */}
-            </textarea>
+            <form>
+                <textarea id="demo" className="design" rows="30" cols="50" required value={code} onChange={e => setCode(e.target.value)}></textarea>
+            </form>
             <SyntaxHighlighter language="javascript" style={docco}>
-            {code}
-        </SyntaxHighlighter>
-        
+                {code}
+            </SyntaxHighlighter>
         </div>
         
     );
