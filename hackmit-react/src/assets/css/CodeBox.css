@@ -1,0 +1,11 @@
+.design {
+    background-color: #15314b;
+    color: #FFFFFF;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.container { 
+    padding: 0px 0px 100px 100px; 
+    resize: none;
+}

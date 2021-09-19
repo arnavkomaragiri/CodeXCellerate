@@ -194,3 +194,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# React
+node_modules
