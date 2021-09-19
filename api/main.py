@@ -24,7 +24,7 @@ def completion(text: str, max_tokens: Optional[int]=None, stop: Optional[str]="\
         engine=engine,
         prompt=text,
         max_tokens=max_tokens,
-        temperature=0,
+        temperature=0.1,
         frequency_penalty=0.0, # TODO: Tune these
         presence_penalty=0.0,
         stop=stop
@@ -41,9 +41,8 @@ def runtime(code: Item, lang: str, max_tokens: Optional[int]=None, stop: Optiona
                 " Improve the runtime of the above code", " Improve the time complexity of the above code",
                 " Reduce the time complexity of the above code", " Reduce the runtime complexity of the above code",
                 " Optimize the above code"]
-    footer = ""
 
-    results = [completion(f"{code}\n{prefix} Language: {lang}\n{prefix}{prompt}\n{footer}", max_tokens, stop) for prompt in prompts]
+    results = [completion(f"{code}\n{prefix}{prompt}\n", max_tokens, stop) for prompt in prompts]
     programs = [result["choices"][0]["text"] for result in results]
 
     char_freq_map = lambda x: {c: x.count(c) for c in x}
@@ -52,10 +51,9 @@ def runtime(code: Item, lang: str, max_tokens: Optional[int]=None, stop: Optiona
     seen = set()
     output = []
     for i, char_freq_map in enumerate(char_freq_maps):
-        if char_freq_map not in seen:
-            seen.add(char_freq_map)
-        else:
+        if char_freq_map not in seen and programs[i] != "":
             output.append(programs[i])
+            seen.add(char_freq_map)
     return output
 
 with open("test.txt") as f:
