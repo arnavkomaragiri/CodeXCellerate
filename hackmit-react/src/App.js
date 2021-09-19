@@ -1,13 +1,8 @@
 import { useState } from 'react';
 import './App.css';
 import DropDown from './components/DropDown.js';
-// import Prettify from './components/Prettify.js';
 import CodeBox from './components/CodeBox.js';
 import './assets/css/CodeBox.css'
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-// import react from 'react'
-// import { useEffect } from 'react';
 import './assets/css/Button.css';
 import './assets/css/DropDown.css';
 
@@ -45,23 +40,16 @@ function App() {
   }
 
   return (
-    <div>
-      <div className="row1">
+    <div className="float-container">
+      <div className="float-child">
         <DropDown selected={selectedLang} setSelected={setSelectedLang} typeOfOptions={languages}/>
-      </div>
-      <div className="row2">
         <DropDown selected={selectedOperation} setSelected={setSelectedOperation} typeOfOptions={typeOfOperation}/>
+        <button onClick={submitCode} className="button primary">Run Analysis</button>
       </div>
-        
-      <div className="rowBox">
-      <button onClick={submitCode} className="button primary">Run Analysis</button>
-        <form>
+      <div className="float-child">
           <textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" id="usercode" className="design" rows="30" cols="50" required value={code} onChange={e => setCode(e.target.value)}></textarea>
-        </form> 
-        {/* <Button></Button> */}
       </div>
-      
-    </div>
+      </div>
   );
 }
 
