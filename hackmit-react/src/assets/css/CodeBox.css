@@ -3,9 +3,16 @@
     color: #FFFFFF;
     font-weight: bold;
     font-size: 20px;
-}
+    position: relative;
+    bottom: -1em;
+    padding: 0px;
+    width: 1500px;
+    height: 500px;
+    /* outline: none;  */
+} 
 
-.container { 
+/* .container { 
     padding: 0px 0px 100px 100px; 
     resize: none;
-}
+    justify-content: center;
+} */
