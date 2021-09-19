@@ -2,48 +2,64 @@
     "use strict";
 
     $(function(){
-        $("#1").on('click', '#11', function(){
+        $("#lang").on('click', '#11', function(){
           $("#dropdownMenuButton").text($(this).text());
           $("#dropdownMenuButton").val($(this).text());
         });
-        $("#2").on('click', '#21', function(){
+        $("#task").on('click', '#21', function(){
             $("#dropdownMenuButton1").text($(this).text());
             $("#dropdownMenuButton1").val($(this).text());
         });
     });
 
-    var input = $('.validate-input .input100');
-    $('.validate-form').on('submit',function(){
-        var check = true;
+    function analyzeCode() {
+        var code = $("#code").val();    
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        };
+        return await fetch("http://localhost:8000/", options)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                return data;
+            })
+            .catch(error => {
+                console.error('Request Failed:', error)
+            });
+    }
 
-        for (var i=0; i<input.length; i++) {
-            if (validate(input[i]) == false){
-                showValidate(input[i]);
-                check=false;
-            }
-        }
-
-        return check;
+    
+    $(".contact-form-btn").on('submit', function() {
+        alert("I am here")
+        var code = document.getElementById("code").innerHTML;
+        analyzeCode(code).then(data => {
+            document.getElementById("code").innerHTML = data;
+        })
     });
+
+    // var input = $('.validate-input .input100');
+    // $('.validate-form').on('submit',function(){
+    //     var check = true;
+
+    //     for (var i=0; i<input.length; i++) {
+    //         if (validate(input[i]) == false){
+    //             showValidate(input[i]);
+    //             check=false;
+    //         }
+    //     }
+
+    //     return check;
+    // });
 
     $('.validate-form .input100').each(function(){
         $(this).focus(function(){
            hideValidate(this);
         });
     });
-
-    function validate (input) {
-        if ($(input).attr('type') == 'email' || $(input).attr('name') == 'email') {
-            if ($(input).val().trim().match(/^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{1,5}|[0-9]{1,3})(\]?)$/) == null) {
-                return false;
-            }
-        }
-        else {
-            if ($(input).val().trim() == ''){
-                return false;
-            }
-        }
-    }
 
     function showValidate(input) {
         var thisAlert = $(input).parent();

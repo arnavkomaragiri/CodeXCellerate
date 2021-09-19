@@ -10,18 +10,36 @@ from contextlib import redirect_stdout
 from pydantic import BaseModel
 
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
+from fastapi import Form, Request
+from fastapi.staticfiles import StaticFiles
 
-from api.postprocessing import fetch_url
+from postprocessing import fetch_url
 
+from os import listdir
+from os.path import isfile, join
 
-app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=['*'],
-    allow_credentials=True,
-    allow_methods=['*'],
-    allow_headers=['*'],
-)
+path = os.path.join(os.getcwd())
+# quality ImageNet pics here at $5.00 per pic
+onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
+
+# app = FastAPI()
+
+# app.mount(
+#     "/static",
+#     StaticFiles(directory=os.path.join(os.getcwd(), "static")),
+#     name="static",
+# )
+
+# templates = Jinja2Templates(directory=os.getcwd())
+
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=['*'],
+#     allow_credentials=True,
+#     allow_methods=['*'],
+#     allow_headers=['*'],
+# )
 
 engine = 'davinci-codex'
 openai.api_key = open('env.txt').readlines()[0]
@@ -32,8 +50,20 @@ class Item(BaseModel):
     # max_tokens: int
     # stop: str
 
+# @app.get('/')
+def home(request: Request):
+    code = ""
+    context = {'request': request, 'code': code}
+    return templates.TemplateResponse('index.html', context)
 
-@app.post('/debug/completion')
+# @app.post('/')
+def post_home(request, data):
+    print(request)
+    print(data)
+
+
+
+# @app.post('/debug/completion')
 def completion(text: str, max_tokens: Optional[int]=None, stop: Optional[str]='\n\n#'):
     return openai.Completion.create(
         engine=engine,
@@ -45,11 +75,9 @@ def completion(text: str, max_tokens: Optional[int]=None, stop: Optional[str]='\
         stop=stop
     )
 
-@app.post('/runtime')
-def runtime(model: Item):
-    lang = 'python'
+# @app.post('/runtime')
+def runtime(code: str, lang: str, stop: str='\n\n\n'):
     max_tokens = 1024
-    stop = '\n\n\n'
     if lang.lower() == 'python':
         prefix = '\n#'
     elif lang.lower() == 'c' or lang.lower() == 'c++' or lang.lower() == 'javascript':
@@ -59,7 +87,7 @@ def runtime(model: Item):
                 ' Improve the runtime of the above code', ' Improve the time complexity of the above code',
                 ' Reduce the time complexity of the above code', ' Reduce the runtime complexity of the above code']
 
-    results = [completion(f'{model.code}\n{prefix}{prompt}\n', max_tokens, stop) for prompt in prompts]
+    results = [completion(f'{code}\n{prefix}{prompt}\n', max_tokens, stop) for prompt in prompts]
     programs = [result['choices'][0]['text'] for result in results]
 
     char_freq_map = lambda x: { c: x.count(c) for c in x }
@@ -73,11 +101,9 @@ def runtime(model: Item):
             seen.add(char_freq_map)
     return output
 
-@app.post('/explain')
-def explain(model: Item):
-    lang = 'python'
+# @app.post('/explain')
+def explain(code: str, lang: str, stop: str='\n\n\n'):
     max_tokens = 1024
-    stop = '\n\n\n'
     if lang.lower() == 'python':
         prefix = '\n#'
         suffix = "'''"
@@ -85,20 +111,18 @@ def explain(model: Item):
         prefix = '\n/**'
         suffix = '*/'
     prompt = ' Explain.\n'
-    return completion(model.code + prefix + prompt + suffix, max_tokens, '\n\n')['choices'][0]['text']
+    return completion(code + prefix + prompt + suffix, max_tokens, '\n\n')['choices'][0]['text']
 
-@app.post('/copied')
-def copied(model: Item):
-    lang = 'python'
+# @app.post('/copied')
+def copied(code: str, lang: str, stop: str='\n\n\n'):
     max_tokens = 1024
-    stop = '\n\n\n'
     if lang.lower() == 'c' or lang.lower() == 'c++' or lang.lower() == 'javascript':
         prefix = '\n//'
     elif lang.lower() == 'python':
         prefix = '\n#'
 
     prompt = (' What URL was the following code copied from?\n')
-    url = fetch_url(completion(model.code + prefix + prompt, max_tokens, stop)['choices'][0]['text'])
+    url = fetch_url(completion(code + prefix + prompt, max_tokens, stop)['choices'][0]['text'])
 
     # GPT-3 may troll you with Rick Astley's YouTube video if code was not copied :)
     if (url in 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' or '://' not in url):
