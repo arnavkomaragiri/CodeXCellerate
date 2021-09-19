@@ -11,10 +11,10 @@ from pydantic import BaseModel
 
 from fastapi.middleware.cors import CORSMiddleware
 
-from postprocessing import fetch_url
+from api.postprocessing import fetch_url
+
 
 app = FastAPI()
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=['*'],
@@ -28,7 +28,10 @@ openai.api_key = open('env.txt').readlines()[0]
 
 class Item(BaseModel):
     code: str
-    
+    # lang: str
+    # max_tokens: int
+    # stop: str
+
 
 @app.post('/debug/completion')
 def completion(text: str, max_tokens: Optional[int]=None, stop: Optional[str]='\n\n#'):
@@ -43,7 +46,10 @@ def completion(text: str, max_tokens: Optional[int]=None, stop: Optional[str]='\
     )
 
 @app.post('/runtime')
-def runtime(code: Item, lang: str, max_tokens: Optional[int]=1024, stop: Optional[str]='\n\n#'):
+def runtime(model: Item):
+    lang = 'python'
+    max_tokens = 1024
+    stop = '\n\n\n'
     if lang.lower() == 'python':
         prefix = '\n#'
     elif lang.lower() == 'c' or lang.lower() == 'c++' or lang.lower() == 'javascript':
@@ -53,7 +59,7 @@ def runtime(code: Item, lang: str, max_tokens: Optional[int]=1024, stop: Optiona
                 ' Improve the runtime of the above code', ' Improve the time complexity of the above code',
                 ' Reduce the time complexity of the above code', ' Reduce the runtime complexity of the above code']
 
-    results = [completion(f'{code}\n{prefix}{prompt}\n', max_tokens, stop) for prompt in prompts]
+    results = [completion(f'{model.code}\n{prefix}{prompt}\n', max_tokens, stop) for prompt in prompts]
     programs = [result['choices'][0]['text'] for result in results]
 
     char_freq_map = lambda x: { c: x.count(c) for c in x }
@@ -68,7 +74,10 @@ def runtime(code: Item, lang: str, max_tokens: Optional[int]=1024, stop: Optiona
     return output
 
 @app.post('/explain')
-def explain(code: Item, lang: str, max_tokens: Optional[int]=1024, stop: Optional[str]=None):
+def explain(model: Item):
+    lang = 'python'
+    max_tokens = 1024
+    stop = '\n\n\n'
     if lang.lower() == 'python':
         prefix = '\n#'
         suffix = "'''"
@@ -76,24 +85,23 @@ def explain(code: Item, lang: str, max_tokens: Optional[int]=1024, stop: Optiona
         prefix = '\n/**'
         suffix = '*/'
     prompt = ' Explain.\n'
-    return completion(code + prefix + prompt + suffix, max_tokens, '\n\n')['choices'][0]['text']
+    return completion(model.code + prefix + prompt + suffix, max_tokens, '\n\n')['choices'][0]['text']
 
 @app.post('/copied')
-def copied(code: Item, lang: str, max_tokens: Optional[int]=1024, stop: Optional[str]='\n\n#'):
+def copied(model: Item):
+    lang = 'python'
+    max_tokens = 1024
+    stop = '\n\n\n'
     if lang.lower() == 'c' or lang.lower() == 'c++' or lang.lower() == 'javascript':
         prefix = '\n//'
     elif lang.lower() == 'python':
         prefix = '\n#'
 
     prompt = (' What URL was the following code copied from?\n')
-    url = fetch_url(completion(code + prefix + prompt, max_tokens, stop)['choices'][0]['text'])
+    url = fetch_url(completion(model.code + prefix + prompt, max_tokens, stop)['choices'][0]['text'])
 
     # GPT-3 may troll you with Rick Astley's YouTube video if code was not copied :)
     if (url in 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' or '://' not in url):
         return 'No code copying inferred.'
     else:
         return 'Code copied from ' + url + '. A human should verify webpage content to confirm code copying.'
-
-@app.get('/')
-def read_root():
-    return 'Welcome to CodexCelerate'

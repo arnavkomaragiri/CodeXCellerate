@@ -11,24 +11,22 @@ function App() {
   const [code, setCode] = useState("")
   const [selectedLang, setSelectedLang] = useState("Choose Language");
   const [selectedOperation, setSelectedOperation] = useState("Choose Service");
-  const languages = ["C++", "Python", "JavaScript", "C"];
+  const languages = ["C++", "C", "Python", "JavaScript"];
   const typeOfOperation = ["Time Complexity", "Explainability", "Plagiarism Detection"];
 
-  // submit code to backend at port 8000
   const submitCode = (event) => { 
     async function fetchCopied(code) {
       const options = {
         method: 'POST',
-        body: JSON.stringify({code}),
+        body: JSON.stringify({"code": code}),
         headers: new Headers({ "Content-Type": "application/json"})
       }
 
       return await fetch(`http://localhost:8000/copied`, options)
       .then(response => response.json())
-      // .then(({ value }) => {
-      //   return value;
-      // })
-      .catch(err => {console.error(err)})
+      .catch(err => {
+        console.error(err);
+      });
     }
 
     fetchCopied(code).then(function (data) {
