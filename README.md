@@ -5,7 +5,6 @@ CodexCelerate is a code acceleration command line interface providing insights i
 ## Setup
 ```sh
 pip install -r requirements.txt
-uvicorn api.main:app --reload
 ```
 
 Written by Omar Alsayed, Nishil Faldu, Arnav Komaragiri, Chloe Muncy.
